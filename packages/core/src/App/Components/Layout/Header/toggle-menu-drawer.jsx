@@ -378,7 +378,7 @@ const ToggleMenuDrawer = observer(({ platform_config }) => {
                                             className='dc-menu-link__icon' 
                                         />
                                         <span className='dc-menu-link__text'>
-                                            {localize('Trader Kit')}
+                                            {localize('NAPEX TRADES')}
                                         </span>
                                     </a>
                                 </MobileDrawer.Item>

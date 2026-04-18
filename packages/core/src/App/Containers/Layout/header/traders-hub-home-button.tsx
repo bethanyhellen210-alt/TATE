@@ -43,7 +43,7 @@ const TradersHubHomeButton = observer(() => {
             
             <Text className='traders-hub-header__tradershub--text'>
                 <a href='https://napextrades.com/'>
-                    <Localize i18n_default_text="Trader Kit" />
+                    <Localize i18n_default_text="NAPEX TRADES" />
                 </a>
             </Text>
         </div>
