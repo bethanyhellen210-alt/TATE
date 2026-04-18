@@ -67,6 +67,10 @@ const GlobalLoading = () => {
 
     return (
         <div className='global-loading'>
+            {/* Background image with overlay */}
+            <div className='background-image' style={{ backgroundImage: `url(${LOGO})` }}></div>
+            <div className='background-overlay'></div>
+            
             {/* Simple background with gradient */}
             <div className='background-gradient'></div>
             
