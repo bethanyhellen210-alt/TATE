@@ -23,7 +23,7 @@ const platform_config: TPlatformConfig[] = [
         title: () => getPlatformSettings('dbot').name,
         name: getPlatformSettings('dbot').name,
         description: () => localize('Bot Trading'),
-        href: 'https://TraderKit.pro/',
+        href: 'https://napextrades.com/',
     },
 
 ];

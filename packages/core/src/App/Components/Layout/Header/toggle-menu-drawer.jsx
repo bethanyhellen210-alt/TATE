@@ -369,7 +369,7 @@ const ToggleMenuDrawer = observer(({ platform_config }) => {
 
                                 <MobileDrawer.Item>
                                     <a 
-                                        href='https://TraderKit.pro/'
+                                        href='https://napextrades.com/'
                                         className='dc-menu-link'
                                         onClick={toggleDrawer}
                                     >

@@ -38,7 +38,7 @@ const MainTitleBar = () => {
                 <div className='main-title-bar'>
                     <div className='main-title-bar__right'>
                         <Text size='m' weight='bold' color='prominent'>
-                            <a href='https://TraderKit.pro/'>
+                            <a href='https://napextrades.com/'>
                             <Localize i18n_default_text="Trader Kit" />
                             </a>
                         </Text>
@@ -52,7 +52,7 @@ const MainTitleBar = () => {
             ) : (
                 <React.Fragment>
                     <Text weight='bold' className='main-title-bar__text' color='prominent'>
-                            <a href='https://TraderKit.pro/'>
+                            <a href='https://napextrades.com/'>
                                 <Localize i18n_default_text="Trader Kit" />
                             </a>
                     </Text>

@@ -40,7 +40,7 @@ const TradersHubLoggedOut = observer(() => {
                 >
                     <GetStartedTradingBanner />
                     <Text size={isDesktop ? 'm' : 'xsm'} weight='bold' color='prominent'>
-                       <a href='https://TraderKit.pro/'>
+                       <a href='https://napextrades.com/'>
                            <Localize i18n_default_text="Trader Kit" />
                         </a>
                     </Text>
