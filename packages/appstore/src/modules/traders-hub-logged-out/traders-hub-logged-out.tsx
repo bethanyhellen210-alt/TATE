@@ -40,8 +40,8 @@ const TradersHubLoggedOut = observer(() => {
                 >
                     <GetStartedTradingBanner />
                     <Text size={isDesktop ? 'm' : 'xsm'} weight='bold' color='prominent'>
-                       <a href='https://napextrades.com/'>
-                           <Localize i18n_default_text="NAPEX TRADES" />
+                       <a href='https://KICKTRADES.com/'>
+                           <Localize i18n_default_text="KICK TRADES" />
                         </a>
                     </Text>
                     {isDesktop ? (
