@@ -44,7 +44,6 @@ export * from './utils/date';
 export * from './utils/digital-options';
 export * from './utils/files';
 export * from './utils/helpers';
-export * from './utils/hooks';
 export * from './utils/loader';
 export * from './utils/loader-handler';
 export * from './utils/location';
@@ -85,3 +84,92 @@ export { default as cacheTrackEvents } from './utils/analytics/analytics';
 
 // Export default_title for components that need it
 export const default_title = 'Deriv';
+
+// Export useOnLoadTranslation hook for components that need it
+import React from 'react';
+
+export const useOnLoadTranslation = () => {
+    const [isTranslationLoaded, setIsTranslationLoaded] = React.useState(true);
+    const [isRtl, setIsRtl] = React.useState(false);
+    
+    React.useEffect(() => {
+        // Check if translations are loaded
+        const checkTranslationLoaded = () => {
+            // Check for i18n initialization indicators
+            const i18nElement = document.querySelector('[data-i18n]');
+            const i18nLoaded = document.querySelector('[data-i18n-loaded]');
+            const translationElement = document.querySelector('[data-translation-loaded]');
+            const isLoaded = !!(i18nElement || i18nLoaded || translationElement);
+            setIsTranslationLoaded(isLoaded);
+        };
+        
+        // Check RTL based on document direction or language
+        const checkRtl = () => {
+            const isRtlDocument = document.documentElement.dir === 'rtl';
+            const htmlLang = document.documentElement.lang;
+            const rtlLanguages = ['ar', 'he', 'fa', 'ur', 'ku', 'ps', 'sd', 'ug', 'yi'];
+            const isRtlLanguage = rtlLanguages.includes(htmlLang?.toLowerCase() || '');
+            setIsRtl(isRtlDocument || isRtlLanguage);
+        };
+        
+        // Initial checks
+        checkTranslationLoaded();
+        checkRtl();
+        
+        // Watch for DOM changes that might indicate translation loading
+        const observer = new MutationObserver(() => {
+            checkTranslationLoaded();
+            checkRtl();
+        });
+        
+        // Start observing the document body for changes
+        if (document.body) {
+            observer.observe(document.body, {
+                attributes: true,
+                childList: true,
+                subtree: true,
+            });
+        }
+        
+        // Also check when window loads
+        const handleLoad = () => {
+            setTimeout(() => {
+                checkTranslationLoaded();
+                checkRtl();
+            }, 100);
+        };
+        
+        window.addEventListener('load', handleLoad);
+        
+        // Check for i18n library initialization
+        const checkI18nInterval = setInterval(() => {
+            // Check if i18next is initialized globally
+            if (window.i18next || window.i18n) {
+                setIsTranslationLoaded(true);
+                clearInterval(checkI18nInterval);
+            }
+        }, 500);
+        
+        // Cleanup timeout for interval
+        const timeout = setTimeout(() => {
+            clearInterval(checkI18nInterval);
+        }, 5000);
+        
+        return () => {
+            observer.disconnect();
+            window.removeEventListener('load', handleLoad);
+            clearInterval(checkI18nInterval);
+            clearTimeout(timeout);
+        };
+    }, []);
+    
+    return [isTranslationLoaded, isRtl];
+};
+
+// Add TypeScript declaration for global i18n objects
+declare global {
+    interface Window {
+        i18next?: any;
+        i18n?: any;
+    }
+}
