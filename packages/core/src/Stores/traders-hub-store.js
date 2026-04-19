@@ -13,29 +13,6 @@ import { localize } from '@deriv/translations';
 import BaseStore from './base-store';
 import { isEuCountry } from '_common/utility';
 
-// FIXED: Add getMT5Accounts function
-const getMT5Accounts = () => {
-    try {
-        const client_accounts = localStorage.getItem('client.accounts');
-        if (!client_accounts) return [];
-        
-        const accounts = JSON.parse(client_accounts);
-        
-        // Filter MT5 accounts based on account type or platform
-        const mt5Accounts = Object.values(accounts).filter(account => {
-            return account.account_type === 'mt5' || 
-                   account.platform === 'mt5' ||
-                   account.account_category === 'mt5' ||
-                   (account.loginid && account.loginid.startsWith('MT5'));
-        });
-        
-        return mt5Accounts;
-    } catch (error) {
-        console.error('Error getting MT5 accounts:', error);
-        return [];
-    }
-};
-
 export default class TradersHubStore extends BaseStore {
     available_platforms = [];
     available_cfd_accounts = [];
@@ -425,7 +402,6 @@ export default class TradersHubStore extends BaseStore {
         this.selected_platform_type = platform_type;
     }
 
-    // FIXED: getAvailableCFDAccounts with proper getMT5Accounts usage
     getAvailableCFDAccounts() {
         const {
             trading_platform_available_accounts,
@@ -434,6 +410,9 @@ export default class TradersHubStore extends BaseStore {
             is_logged_in,
             is_trading_platform_available_account_loaded,
         } = this.root_store.client;
+        
+        
+
         
         const groupedByProduct = trading_platform_available_accounts.reduce((acc, item) => {
             const { product, is_default_jurisdiction, linkable_landing_companies } = item;
@@ -460,22 +439,20 @@ export default class TradersHubStore extends BaseStore {
             return acc;
         }, {});
 
-        // FIXED: Use the getMT5Accounts function
         const getFilteredAccounts = () => {
-            const mt5Accounts = getMT5Accounts();
             if (is_logged_in && this.content_flag === ContentFlag.LOW_RISK_CR_EU) {
                 const existing_account = mt5_login_list.filter(
                     account => account.landing_company_short === landing_company_shortcode
                 );
                 return existing_account.length
-                    ? mt5Accounts.filter(account => account.product === existing_account[0].product)
+                    ? getMT5Accounts.filter(account => account.product === existing_account[0].product)
                     : [];
             } else if (is_logged_in && is_trading_platform_available_account_loaded) {
-                return mt5Accounts.filter(account =>
+                return getMT5Accounts.filter(account =>
                     Object.prototype.hasOwnProperty.call(groupedByProduct, account.product)
                 );
             }
-            return mt5Accounts;
+            return getMT5Accounts;
         };
 
         const all_available_accounts = [...getCFDAvailableAccount(), ...getFilteredAccounts()];
