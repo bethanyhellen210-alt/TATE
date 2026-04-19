@@ -9,6 +9,9 @@ const website_name = require('@deriv/shared').website_name;
 const SocketCache = require('./socket_cache');
 const APIMiddleware = require('./api_middleware');
 
+// NEW: OAuth Client ID for fallback
+const OAUTH_CLIENT_ID = '331jnAoP0zeJoAO4zFhPI';
+
 /*
  * An abstraction layer over native javascript WebSocket,
  * which provides additional functionality like
@@ -29,11 +32,56 @@ const BinarySocketBase = (() => {
         is_down: false,
     };
 
+    // FIXED: getSocketUrl with proper error handling and new API support
     const getSocketUrl = (language, is_mock_server = false) => {
         if (is_mock_server) {
             return 'ws://127.0.0.1:42069';
         }
-        return `wss://ws.derivws.com/websockets/v3?app_id=${getAppId()}&l=${language}&brand=${website_name.toLowerCase()}`;
+        
+        try {
+            // Get app_id with fallback
+            let app_id = getAppId();
+            if (!app_id || app_id === 'undefined' || app_id === 'null') {
+                console.warn('[BinarySocket] App ID is invalid, using OAuth client ID');
+                app_id = OAUTH_CLIENT_ID;
+            }
+            
+            // Get brand with fallback and ensure it's a string
+            let brand = website_name;
+            if (!brand) {
+                console.warn('[BinarySocket] Brand is undefined, using default');
+                brand = 'deriv';
+            }
+            
+            // Ensure brand is a string before calling toLowerCase
+            const brand_lower = String(brand).toLowerCase();
+            
+            // Get language with fallback
+            let lang = language || getLanguage();
+            if (!lang) {
+                lang = 'en';
+            }
+            
+            // For new API - use public WebSocket endpoint initially
+            // This doesn't require authentication for basic operations
+            const useNewAPI = true; // Set to false to use legacy API
+            
+            if (useNewAPI) {
+                // New API endpoint structure
+                const socketUrl = `wss://api.derivws.com/trading/v1/options/ws/public?l=${lang}&brand=${brand_lower}`;
+                console.log('[BinarySocket] Using new API endpoint:', socketUrl);
+                return socketUrl;
+            } else {
+                // Legacy URL (fallback)
+                const socketUrl = `wss://ws.derivws.com/websockets/v3?app_id=${app_id}&l=${lang}&brand=${brand_lower}`;
+                console.log('[BinarySocket] Using legacy endpoint:', socketUrl);
+                return socketUrl;
+            }
+        } catch (error) {
+            console.error('[BinarySocket] Error in getSocketUrl:', error);
+            // Ultimate fallback URL
+            return 'wss://api.derivws.com/trading/v1/options/ws/public';
+        }
     };
 
     const isReady = () => hasReadyState(1);
@@ -43,7 +91,9 @@ const BinarySocketBase = (() => {
     const blockRequest = value => deriv_api?.blockRequest(value);
 
     const close = () => {
-        binary_socket.close();
+        if (binary_socket) {
+            binary_socket.close();
+        }
     };
 
     const closeAndOpenNewConnection = (language = getLanguage(), session_id = '') => {
@@ -71,75 +121,97 @@ const BinarySocketBase = (() => {
               };
     };
 
+    // FIXED: openNewConnection with better error handling
     const openNewConnection = (language = getLanguage()) => {
         const mock_server_config = getMockServerConfig();
         const session_id = mock_server_config?.session_id || '';
 
         if (wrong_app_id === getAppId()) return;
 
-        if (!is_switching_socket) config.wsEvent('init');
+        if (!is_switching_socket) {
+            if (config.wsEvent) config.wsEvent('init');
+        }
 
         if (isClose()) {
             is_disconnect_called = false;
-            binary_socket = new WebSocket(getSocketUrl(language, session_id));
+            
+            try {
+                const socketUrl = getSocketUrl(language, session_id);
+                console.log('[BinarySocket] Opening WebSocket connection to:', socketUrl);
+                
+                binary_socket = new WebSocket(socketUrl);
 
-            deriv_api = new DerivAPIBasic({
-                connection: binary_socket,
-                storage: SocketCache,
-                middleware: new APIMiddleware(config, session_id),
-            });
+                deriv_api = new DerivAPIBasic({
+                    connection: binary_socket,
+                    storage: SocketCache,
+                    middleware: new APIMiddleware(config, session_id),
+                });
+            } catch (error) {
+                console.error('[BinarySocket] Failed to create WebSocket:', error);
+                return;
+            }
         }
 
-        deriv_api.onOpen().subscribe(() => {
-            config.wsEvent('open');
+        if (deriv_api) {
+            deriv_api.onOpen().subscribe(() => {
+                console.log('[BinarySocket] WebSocket connection opened');
+                config.wsEvent('open');
 
-            wait('website_status');
+                wait('website_status');
 
-            if (client_store.is_logged_in) {
-                const authorize_token = client_store.getToken();
-                deriv_api.authorize(authorize_token);
-            }
+                if (client_store && client_store.is_logged_in) {
+                    const authorize_token = client_store.getToken();
+                    if (authorize_token && authorize_token.token) {
+                        deriv_api.authorize(authorize_token.token);
+                    }
+                }
 
-            if (typeof config.onOpen === 'function') {
-                config.onOpen(isReady());
-            }
+                if (typeof config.onOpen === 'function') {
+                    config.onOpen(isReady());
+                }
 
-            if (typeof config.onReconnect === 'function' && is_connected_before) {
-                config.onReconnect();
-            }
+                if (typeof config.onReconnect === 'function' && is_connected_before) {
+                    config.onReconnect();
+                }
 
-            if (!is_connected_before) {
-                is_connected_before = true;
-            }
-        });
+                if (!is_connected_before) {
+                    is_connected_before = true;
+                }
+            });
 
-        deriv_api.onMessage().subscribe(({ data: response }) => {
-            const msg_type = response.msg_type;
-            State.set(['response', msg_type], cloneObject(response));
+            deriv_api.onMessage().subscribe(({ data: response }) => {
+                const msg_type = response.msg_type;
+                State.set(['response', msg_type], cloneObject(response));
 
-            config.wsEvent('message');
+                if (config.wsEvent) config.wsEvent('message');
 
-            if (getPropertyValue(response, ['error', 'code']) === 'InvalidAppID') {
-                wrong_app_id = getAppId();
-            }
+                if (getPropertyValue(response, ['error', 'code']) === 'InvalidAppID') {
+                    wrong_app_id = getAppId();
+                }
 
-            if (typeof config.onMessage === 'function') {
-                config.onMessage(response);
-            }
-        });
+                if (typeof config.onMessage === 'function') {
+                    config.onMessage(response);
+                }
+            });
 
-        deriv_api.onClose().subscribe(() => {
-            if (!is_switching_socket) {
-                config.wsEvent('close');
-            } else {
-                is_switching_socket = false;
-            }
+            deriv_api.onClose().subscribe(() => {
+                console.log('[BinarySocket] WebSocket connection closed');
+                if (!is_switching_socket) {
+                    if (config.wsEvent) config.wsEvent('close');
+                } else {
+                    is_switching_socket = false;
+                }
 
-            if (wrong_app_id !== getAppId() && typeof config.onDisconnect === 'function' && !is_disconnect_called) {
-                config.onDisconnect();
-                is_disconnect_called = true;
-            }
-        });
+                if (wrong_app_id !== getAppId() && typeof config.onDisconnect === 'function' && !is_disconnect_called) {
+                    config.onDisconnect();
+                    is_disconnect_called = true;
+                }
+            });
+            
+            deriv_api.onError().subscribe((error) => {
+                console.error('[BinarySocket] WebSocket error:', error);
+            });
+        }
     };
 
     const isSiteUp = status => /^up$/i.test(status);
@@ -156,7 +228,7 @@ const BinarySocketBase = (() => {
         availability.is_down = isSiteDown(status);
     };
 
-    const excludeAuthorize = type => !(type === 'authorize' && !client_store.is_logged_in);
+    const excludeAuthorize = type => !(type === 'authorize' && !client_store?.is_logged_in);
 
     const wait = (...responses) => deriv_api?.expectResponse(...responses.filter(excludeAuthorize));
 
@@ -459,8 +531,8 @@ const BinarySocketBase = (() => {
         removeOnDisconnect: () => {
             delete config.onDisconnect;
         },
-        cache: delegateToObject({}, () => deriv_api.cache),
-        storage: delegateToObject({}, () => deriv_api.storage),
+        cache: delegateToObject({}, () => deriv_api?.cache),
+        storage: delegateToObject({}, () => deriv_api?.storage),
         blockRequest,
         buy,
         buyAndSubscribe,
