@@ -121,7 +121,7 @@ const BinarySocketBase = (() => {
               };
     };
 
-    // FIXED: openNewConnection with better error handling
+    // FIXED: openNewConnection with better error handling (removed onError)
     const openNewConnection = (language = getLanguage()) => {
         const mock_server_config = getMockServerConfig();
         const session_id = mock_server_config?.session_id || '';
@@ -155,13 +155,15 @@ const BinarySocketBase = (() => {
         if (deriv_api) {
             deriv_api.onOpen().subscribe(() => {
                 console.log('[BinarySocket] WebSocket connection opened');
-                config.wsEvent('open');
+                if (config.wsEvent) config.wsEvent('open');
 
+                // Wait for website_status before proceeding
                 wait('website_status');
 
                 if (client_store && client_store.is_logged_in) {
                     const authorize_token = client_store.getToken();
                     if (authorize_token && authorize_token.token) {
+                        console.log('[BinarySocket] Authorizing user...');
                         deriv_api.authorize(authorize_token.token);
                     }
                 }
@@ -187,6 +189,7 @@ const BinarySocketBase = (() => {
 
                 if (getPropertyValue(response, ['error', 'code']) === 'InvalidAppID') {
                     wrong_app_id = getAppId();
+                    console.error('[BinarySocket] Invalid App ID detected');
                 }
 
                 if (typeof config.onMessage === 'function') {
@@ -208,9 +211,8 @@ const BinarySocketBase = (() => {
                 }
             });
             
-            deriv_api.onError().subscribe((error) => {
-                console.error('[BinarySocket] WebSocket error:', error);
-            });
+            // NOTE: onError method doesn't exist in DerivAPIBasic
+            // Removed the call to deriv_api.onError() as it was causing errors
         }
     };
 
