@@ -3,7 +3,40 @@ export * from './utils/array';
 export * from './utils/brand';
 export * from './utils/browser';
 export * from './utils/cfd';
-export * from './utils/config';
+
+// Export from config but exclude OAUTH_CLIENT_ID to avoid conflict with login
+export {
+    livechat_license_id,
+    livechat_client_id,
+    // OAUTH_CLIENT_ID, // Excluded - will export from login instead
+    OAUTH_AUTH_URL,
+    OAUTH_TOKEN_URL,
+    API_BASE_URL,
+    WEBSOCKET_PUBLIC_URL,
+    WEBSOCKET_DEMO_URL,
+    WEBSOCKET_REAL_URL,
+    domain_app_ids,
+    platform_app_ids,
+    getCurrentProductionDomain,
+    isProduction,
+    isTestLink,
+    isLocal,
+    generatePKCE,
+    redirectToOAuthLogin,
+    redirectToOAuthSignup,
+    exchangeCodeForToken,
+    getWebSocketOTP,
+    getAuthenticatedWebSocketURL,
+    getAccessToken,
+    isAuthenticated,
+    logout,
+    getAppId,
+    getSocketURL,
+    checkAndSetEndpointFromUrl,
+    getDebugServiceWorker,
+    handleOAuthCallback,
+} from './utils/config';
+
 export * from './utils/constants';
 export * from './utils/contract';
 export * from './utils/currency';
@@ -16,7 +49,19 @@ export * from './utils/hooks';
 export * from './utils/loader';
 export * from './utils/loader-handler';
 export * from './utils/location';
-export * from './utils/login';
+
+// Export from login (including OAUTH_CLIENT_ID)
+export {
+    redirectToLogin,
+    redirectToSignUp,
+    loginUrl,
+    signupUrl,
+    handleOAuthRedirect,
+    getStoredRedirectUrl,
+    clearOAuthSession,
+    OAUTH_CLIENT_ID,
+} from './utils/login';
+
 export * from './utils/number';
 export * from './utils/object';
 export * from './utils/os';
