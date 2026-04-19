@@ -83,8 +83,7 @@ export * from './utils/types';
 export * from './helpers';
 export { default as cacheTrackEvents } from './utils/analytics/analytics';
 
-// Add missing exports that components are expecting
-// These should ideally come from their respective files, but adding here as a fallback
+// Complete platforms object with all required properties
 export const default_title = 'Deriv';
 
 export const platforms = {
@@ -94,4 +93,10 @@ export const platforms = {
     dbot: 'dbot',
     derivgo: 'derivgo',
     smarttrader: 'smarttrader',
+    tradershub_os: {
+        url: 'https://deriv.com/tradershub', // Update with actual URL
+    },
+    p2p_v2: {
+        url: 'https://deriv.com/p2p', // Update with actual URL
+    },
 };
