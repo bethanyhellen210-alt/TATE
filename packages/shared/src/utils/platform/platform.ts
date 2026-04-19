@@ -26,6 +26,25 @@ export const CFD_PLATFORMS = Object.freeze({
     CTRADER: 'ctrader',
 });
 
+// ADD THIS: Export platforms object that components expect
+export const platforms = {
+    deriv: 'deriv',
+    binary: 'binary',
+    dtrader: 'dtrader',
+    dbot: 'dbot',
+    derivgo: 'derivgo',
+    smarttrader: 'smarttrader',
+    tradershub_os: {
+        url: window.location.origin + '/tradershub',
+    },
+    p2p_v2: {
+        url: window.location.origin + '/cashier/p2p',
+    },
+    p2p: {
+        url: window.location.origin + '/cashier/p2p',
+    },
+};
+
 export const isBot = () =>
     /^\/bot/.test(window.location.pathname) ||
     (/^\/(br_)/.test(window.location.pathname) && window.location.pathname.split('/')[2] === 'bot');
