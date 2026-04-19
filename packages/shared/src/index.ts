@@ -8,7 +8,6 @@ export * from './utils/cfd';
 export {
     livechat_license_id,
     livechat_client_id,
-    // OAUTH_CLIENT_ID, // Excluded - will export from login instead
     OAUTH_AUTH_URL,
     OAUTH_TOKEN_URL,
     API_BASE_URL,
@@ -83,3 +82,16 @@ export * from './utils/loader-handler';
 export * from './utils/types';
 export * from './helpers';
 export { default as cacheTrackEvents } from './utils/analytics/analytics';
+
+// Add missing exports that components are expecting
+// These should ideally come from their respective files, but adding here as a fallback
+export const default_title = 'Deriv';
+
+export const platforms = {
+    deriv: 'deriv',
+    binary: 'binary',
+    dtrader: 'dtrader',
+    dbot: 'dbot',
+    derivgo: 'derivgo',
+    smarttrader: 'smarttrader',
+};
