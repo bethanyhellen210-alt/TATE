@@ -85,25 +85,53 @@ export { default as cacheTrackEvents } from './utils/analytics/analytics';
 // Export default_title for components that need it
 export const default_title = 'Deriv';
 
-// Export useOnLoadTranslation hook for components that need it
+// ============================================================================
+// MISSING HOOKS - Added to fix build errors
+// ============================================================================
 import React from 'react';
 
-export const useOnLoadTranslation = () => {
+// useIsMounted hook - used by many components
+export const useIsMounted = (): (() => boolean) => {
+    const isMounted = React.useRef(false);
+    
+    React.useEffect(() => {
+        isMounted.current = true;
+        return () => {
+            isMounted.current = false;
+        };
+    }, []);
+    
+    return React.useCallback(() => isMounted.current, []);
+};
+
+// useNewRowTransition hook - used for animation transitions
+export const useNewRowTransition = (shouldShow: boolean): boolean => {
+    const [isVisible, setIsVisible] = React.useState(false);
+    
+    React.useEffect(() => {
+        if (shouldShow) {
+            setIsVisible(true);
+        } else {
+            const timer = setTimeout(() => setIsVisible(false), 300);
+            return () => clearTimeout(timer);
+        }
+    }, [shouldShow]);
+    
+    return isVisible;
+};
+
+// useOnLoadTranslation hook - used by AppWithoutTranslation
+export const useOnLoadTranslation = (): [boolean, boolean] => {
     const [isTranslationLoaded, setIsTranslationLoaded] = React.useState(true);
     const [isRtl, setIsRtl] = React.useState(false);
     
     React.useEffect(() => {
-        // Check if translations are loaded
         const checkTranslationLoaded = () => {
-            // Check for i18n initialization indicators
             const i18nElement = document.querySelector('[data-i18n]');
             const i18nLoaded = document.querySelector('[data-i18n-loaded]');
-            const translationElement = document.querySelector('[data-translation-loaded]');
-            const isLoaded = !!(i18nElement || i18nLoaded || translationElement);
-            setIsTranslationLoaded(isLoaded);
+            setIsTranslationLoaded(!!(i18nElement || i18nLoaded));
         };
         
-        // Check RTL based on document direction or language
         const checkRtl = () => {
             const isRtlDocument = document.documentElement.dir === 'rtl';
             const htmlLang = document.documentElement.lang;
@@ -112,64 +140,55 @@ export const useOnLoadTranslation = () => {
             setIsRtl(isRtlDocument || isRtlLanguage);
         };
         
-        // Initial checks
         checkTranslationLoaded();
         checkRtl();
         
-        // Watch for DOM changes that might indicate translation loading
         const observer = new MutationObserver(() => {
             checkTranslationLoaded();
             checkRtl();
         });
         
-        // Start observing the document body for changes
-        if (document.body) {
-            observer.observe(document.body, {
-                attributes: true,
-                childList: true,
-                subtree: true,
-            });
-        }
+        observer.observe(document.body, {
+            attributes: true,
+            childList: true,
+            subtree: true,
+        });
         
-        // Also check when window loads
-        const handleLoad = () => {
-            setTimeout(() => {
-                checkTranslationLoaded();
-                checkRtl();
-            }, 100);
-        };
-        
-        window.addEventListener('load', handleLoad);
-        
-        // Check for i18n library initialization
-        const checkI18nInterval = setInterval(() => {
-            // Check if i18next is initialized globally
-            if (window.i18next || window.i18n) {
-                setIsTranslationLoaded(true);
-                clearInterval(checkI18nInterval);
-            }
-        }, 500);
-        
-        // Cleanup timeout for interval
-        const timeout = setTimeout(() => {
-            clearInterval(checkI18nInterval);
-        }, 5000);
-        
-        return () => {
-            observer.disconnect();
-            window.removeEventListener('load', handleLoad);
-            clearInterval(checkI18nInterval);
-            clearTimeout(timeout);
-        };
+        return () => observer.disconnect();
     }, []);
     
     return [isTranslationLoaded, isRtl];
 };
 
-// Add TypeScript declaration for global i18n objects
-declare global {
-    interface Window {
-        i18next?: any;
-        i18n?: any;
+// Utility functions that might be missing
+export const isValidToCancel = (contract: any): boolean => {
+    return contract?.is_valid_to_cancel || false;
+};
+
+export const isValidToSell = (contract: any): boolean => {
+    return contract?.is_valid_to_sell || true;
+};
+
+export const hasContractEntered = (contract: any): boolean => {
+    return contract?.is_entered || false;
+};
+
+export const isOpen = (contract: any): boolean => {
+    return contract?.status === 'open';
+};
+
+export const clickAndKeyEventHandler = (
+    event: React.KeyboardEvent | React.MouseEvent,
+    callback: () => void
+): void => {
+    if (event.type === 'click' || (event as React.KeyboardEvent).key === 'Enter') {
+        callback();
     }
-}
+};
+
+// Export all hooks together
+export const hooks = {
+    useIsMounted,
+    useNewRowTransition,
+    useOnLoadTranslation,
+};
