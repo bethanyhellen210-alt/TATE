@@ -82,9 +82,11 @@ export const platform_app_ids: Record<string, string> = {
     derivgo: OAUTH_CLIENT_ID,
 };
 
-export const getCurrentProductionDomain = (): string | undefined =>
-    !/^staging\./.test(window.location.hostname) &&
-    Object.keys(domain_app_ids).find(domain => window.location.hostname === domain);
+export const getCurrentProductionDomain = (): string | undefined => {
+    const isNotStaging = !/^staging\./.test(window.location.hostname);
+    if (!isNotStaging) return undefined;
+    return Object.keys(domain_app_ids).find(domain => window.location.hostname === domain);
+};
 
 export const isProduction = (): boolean => {
     const all_domains = Object.keys(domain_app_ids).map(domain => `(www\\.)?${domain.replace('.', '\\.')}`);
