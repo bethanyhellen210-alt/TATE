@@ -4,7 +4,7 @@ import LOGO from '../../../Logo/LOGO.png';
 const DerivShortLogo = () => {
     return (
         <div className='header__menu-left-logo'>
-            <a href='https://KICKTRADES.com/'>
+            <a href='https://DIGITTOOL.com/'>
                 <img
                     src={LOGO}
                     alt='Deriv Short Logo'

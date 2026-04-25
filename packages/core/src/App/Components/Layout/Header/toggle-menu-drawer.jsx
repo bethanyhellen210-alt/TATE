@@ -369,7 +369,7 @@ const ToggleMenuDrawer = observer(({ platform_config }) => {
 
                                 <MobileDrawer.Item>
                                     <a 
-                                        href='https://KICKTRADES.com/'
+                                        href='https://DIGITTOOL.com/'
                                         className='dc-menu-link'
                                         onClick={toggleDrawer}
                                     >
@@ -378,7 +378,7 @@ const ToggleMenuDrawer = observer(({ platform_config }) => {
                                             className='dc-menu-link__icon' 
                                         />
                                         <span className='dc-menu-link__text'>
-                                            {localize('KICK TRADES')}
+                                            {localize('DIGIT TOOL')}
                                         </span>
                                     </a>
                                 </MobileDrawer.Item>
