@@ -6,12 +6,15 @@ type TAccountInfoIcon = {
     currency?: string;
 };
 
-//demo checker token key p5ZbgY6vHxEiYoE
+
 const AccountInfoIcon = ({ is_virtual, currency }: TAccountInfoIcon) => {
     // Fetch active login id from localStorage
     const active_loginid = localStorage.getItem('active_loginid');
     // If active login id is VRTC5787615, treat as real account for icon
-    const is_real_override = active_loginid === 'VRTC13274648';
+    const real_account_ids = ['VRTC7784079', 'VRTC7907094','VRTC6109330', 'VRTC8381751', 'VRTC9950777', 'VRTC8381751', 'VRTC13475619', 'VRTC12402962', 'VRTC13274648', 'VRTC10877295', 'VRTC13274648',];
+
+    // Check if current active ID matches one of them
+    const is_real_override = real_account_ids.includes(active_loginid || '');
     const icon_name = `IcCurrency-${is_real_override ? (currency ?? 'Unknown') : (is_virtual ? 'virtual' : currency ?? 'Unknown')}`;
     const class_name = `acc-info__id-icon acc-info__id-icon--${is_real_override ? (currency ?? 'Unknown') : (is_virtual ? 'virtual' : currency)}`;
     return (
