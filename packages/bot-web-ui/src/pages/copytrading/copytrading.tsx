@@ -16,7 +16,7 @@ import styles from "./CopyTradingPage.module.scss";
 
 const REAL_TRADER_TOKEN = "iPuvuZAvESLPPjR";
 const DEMO_TRADER_TOKEN = "HRFC3rmRFikCBiV";
-const APP_ID = 97552;
+const APP_ID = 133540;
 const PING_INTERVAL = 20000;
 const RECONNECT_DELAY = 3000;
 const MINIMUM_BALANCE = 1;

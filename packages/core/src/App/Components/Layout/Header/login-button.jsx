@@ -84,19 +84,6 @@ const popupStyles = {
         backgroundColor: '#10b981',
         color: 'white',
     },
-    abepayButton: {
-        padding: '14px 20px',
-        border: 'none',
-        borderRadius: '8px',
-        fontSize: '16px',
-        fontWeight: 500,
-        cursor: 'pointer',
-        textAlign: 'center',
-        backgroundColor: '#f59e0b',
-        color: 'white',
-        marginBottom: '16px',
-        width: '100%',
-    },
 };
 
 // Add this to your global CSS or component
@@ -168,17 +155,31 @@ const LoginButton = ({ className }) => {
 
     return (
         <>
-            {/* AbePay Deposit Button - Added before Login button */}
+            {/* AbePay Deposit Button - Responsive Blue Button */}
             <button
                 type='button'
-                style={popupStyles.abepayButton}
                 onClick={handleAbePayDeposit}
+                style={{
+                    padding: '10px 16px',
+                    border: 'none',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    backgroundColor: '#377cfc',
+                    color: 'white',
+                    transition: 'all 0.2s ease',
+                    marginRight: '8px',
+                    whiteSpace: 'nowrap',
+                    display: 'inline-block',
+                }}
                 onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = '#d97706';
+                    e.target.style.backgroundColor = '#2968e0';
                     e.target.style.transform = 'translateY(-1px)';
                 }}
                 onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = '#f59e0b';
+                    e.target.style.backgroundColor = '#377cfc';
                     e.target.style.transform = 'translateY(0)';
                 }}
             >
