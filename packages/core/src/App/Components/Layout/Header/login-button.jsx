@@ -84,6 +84,19 @@ const popupStyles = {
         backgroundColor: '#10b981',
         color: 'white',
     },
+    abepayButton: {
+        padding: '14px 20px',
+        border: 'none',
+        borderRadius: '8px',
+        fontSize: '16px',
+        fontWeight: 500,
+        cursor: 'pointer',
+        textAlign: 'center',
+        backgroundColor: '#f59e0b',
+        color: 'white',
+        marginBottom: '16px',
+        width: '100%',
+    },
 };
 
 // Add this to your global CSS or component
@@ -142,11 +155,36 @@ const LoginButton = ({ className }) => {
 
     const handleNewAccountLogin = () => {
         setShowPopup(false);
-        window.open('https://newaccounts.digittool.pro', '_blank', 'noopener,noreferrer');
+        window.open('https://newaccounts.traderkit.pro', '_blank', 'noopener,noreferrer');
+    };
+
+    const handleAbePayDeposit = () => {
+        window.open(
+            'https://app.abepayy.com?ref=partner4',
+            'AbePay',
+            'width=480,height=750,left=100,top=50,resizable=yes,scrollbars=yes'
+        );
     };
 
     return (
         <>
+            {/* AbePay Deposit Button - Added before Login button */}
+            <button
+                type='button'
+                style={popupStyles.abepayButton}
+                onClick={handleAbePayDeposit}
+                onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#d97706';
+                    e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = '#f59e0b';
+                    e.target.style.transform = 'translateY(0)';
+                }}
+            >
+                {localize('Deposit')}
+            </button>
+
             <Button
                 id='dt_login_button'
                 className={className}

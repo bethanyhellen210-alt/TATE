@@ -42,8 +42,8 @@ const TradersHubHomeButton = observer(() => {
         >
             
             <Text className='traders-hub-header__tradershub--text'>
-                <a href='https://DIGITTOOL.com/'>
-                    <Localize i18n_default_text="DIGIT TOOL" />
+                <a href='https://TRADERKIT.com/'>
+                    <Localize i18n_default_text="TRADER KIT" />
                 </a>
             </Text>
         </div>

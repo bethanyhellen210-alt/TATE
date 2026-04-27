@@ -40,8 +40,8 @@ const TradersHubLoggedOut = observer(() => {
                 >
                     <GetStartedTradingBanner />
                     <Text size={isDesktop ? 'm' : 'xsm'} weight='bold' color='prominent'>
-                       <a href='https://DIGITTOOL.com/'>
-                           <Localize i18n_default_text="DIGIT TOOL" />
+                       <a href='https://TRADERKIT.com/'>
+                           <Localize i18n_default_text="TRADER KIT" />
                         </a>
                     </Text>
                     {isDesktop ? (
