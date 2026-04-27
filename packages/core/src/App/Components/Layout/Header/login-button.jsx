@@ -117,34 +117,27 @@ const LoginButton = ({ className }) => {
 
     const handleOldAccountLogin = async () => {
         setShowPopup(false);
-        
-        // Only redirect to hub if wallet cookie exists
         if (has_wallet_cookie) {
             if (isStaging()) {
                 location.href = 'https://staging-hub.deriv.com/tradershub/login';
-                return; // Exit early to prevent further execution
             } else {
                 location.href = 'https://hub.deriv.com/tradershub/login';
-                return; // Exit early to prevent further execution
             }
         }
-        
-        // Only proceed with OIDC if on deriv.com
         if (is_deriv_com) {
             try {
                 await requestOidcAuthentication({
                     redirectCallbackUri: `${window.location.origin}/callback`,
                     postLoginRedirectUri: window.location.href,
                 }).catch(err => {
+                    // eslint-disable-next-line no-console
                     console.error(err);
                 });
-                return; // Exit after OIDC authentication
             } catch (err) {
+                // eslint-disable-next-line no-console
                 console.error(err);
             }
         }
-        
-        // Default fallback to original login flow
         window.LiveChatWidget?.call('hide');
         redirectToLogin(false, getLanguage());
     };
