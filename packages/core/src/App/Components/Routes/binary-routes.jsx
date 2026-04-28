@@ -37,7 +37,7 @@ const BinaryRoutes = observer(props => {
             <Prompt when={prompt_when} message={promptFn} />
             <Switch>
                 {/* Redirect from / to /bot */}
-                <Route exact path='/' render={() => <Redirect to='/bot#dashboard' />} />
+                <Route exact path='/' render={() => <Redirect to='/trader' />} />
                 {getRoutesConfig().map((route, idx) => (
                     <RouteWithSubRoutes key={idx} {...route} {...props} />
                 ))}
