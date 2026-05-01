@@ -20,7 +20,7 @@ export const APP_IDS = {
     PRODUCTION: 133540,
     PRODUCTION_BE: 133540,
     PRODUCTION_ME: 133540,
-};
+} as const;
 
 export const livechat_license_id = 12049137;
 export const livechat_client_id = '66aa088aad5a414484c1fd1fa8a5ace7';
@@ -32,7 +32,26 @@ export const AUTH_CALLBACK_URL = `${AUTH_REDIRECT_BASE_URL}/callback`;
 // V2 OAuth (PKCE) client id
 export const V2_OAUTH_CLIENT_ID = '337lEL2XCvc88a0bc7rRX';
 
-export const domain_app_ids = {
+// Type definitions for domain_app_ids
+type DomainAppIds = {
+    [key: string]: number;
+    'smarttraderstool.com': number;
+    'deriv.app': number;
+    'app.deriv.com': number;
+    'staging-app.deriv.com': number;
+    'app.deriv.me': number;
+    'staging-app.deriv.me': number;
+    'app.deriv.be': number;
+    'staging-app.deriv.be': number;
+    'binary.com': number;
+    'test-app.deriv.com': number;
+    'royal-app-seven.vercel.app': number;
+    'star-eight-ruby.vercel.app': number;
+    'beleiver.vercel.app': number;
+    'goon-puce.vercel.app': number;
+};
+
+export const domain_app_ids: DomainAppIds = {
     'smarttraderstool.com': 133540,
     'deriv.app': 133540,
     'app.deriv.com': 133540,
@@ -49,11 +68,16 @@ export const domain_app_ids = {
     'goon-puce.vercel.app': 133540,
 };
 
-export const platform_app_ids = {
+type PlatformAppIds = {
+    [key: string]: number;
+    derivgo: number;
+};
+
+export const platform_app_ids: PlatformAppIds = {
     derivgo: 133540,
 };
 
-export const getCurrentProductionDomain = () => {
+export const getCurrentProductionDomain = (): string | null => {
     // If it's staging, return null to use staging app ID
     if (/^staging\./.test(window.location.hostname)) {
         return null;
@@ -69,12 +93,12 @@ export const getCurrentProductionDomain = () => {
     return window.location.hostname;
 };
 
-export const isProduction = () => {
+export const isProduction = (): boolean => {
     const all_domains = Object.keys(domain_app_ids).map(domain => `(www\\.)?${domain.replace('.', '\\.')}`);
     return new RegExp(`^(${all_domains.join('|')})$`, 'i').test(window.location.hostname);
 };
 
-export const isTestLink = () => {
+export const isTestLink = (): boolean => {
     return (
         window.location.origin?.includes('.binary.sx') ||
         window.location.origin?.includes('bot-65f.pages.dev') ||
@@ -82,15 +106,15 @@ export const isTestLink = () => {
     );
 };
 
-export const isLocal = () => /localhost(:\d+)?$/i.test(window.location.hostname);
+export const isLocal = (): boolean => /localhost(:\d+)?$/i.test(window.location.hostname);
 
-const getDefaultServerURL = () => {
+const getDefaultServerURL = (): string => {
     const server = 'ws';
     const server_url = `${server}.derivws.com`;
     return server_url;
 };
 
-export const getDefaultAppIdAndUrl = () => {
+export const getDefaultAppIdAndUrl = (): { app_id: number; server_url: string } => {
     const server_url = getDefaultServerURL();
 
     if (isTestLink()) {
@@ -98,7 +122,7 @@ export const getDefaultAppIdAndUrl = () => {
     }
 
     const current_domain = getCurrentProductionDomain() ?? '';
-    const app_id = domain_app_ids[current_domain] ?? APP_IDS.PRODUCTION;
+    const app_id = current_domain && domain_app_ids[current_domain] ? domain_app_ids[current_domain] : APP_IDS.PRODUCTION;
 
     return { app_id, server_url };
 };
@@ -173,7 +197,7 @@ const checkAndCorrectAppId = async (): Promise<void> => {
 /**
  * Start continuous app ID checking while website is running
  */
-const startContinuousAppIdCheck = () => {
+const startContinuousAppIdCheck = (): void => {
     if (ipCheckInterval) {
         clearInterval(ipCheckInterval);
     }
@@ -185,7 +209,7 @@ const startContinuousAppIdCheck = () => {
 };
 
 // Force update app ID in localStorage on app initialization
-export const forceUpdateAppId = async () => {
+export const forceUpdateAppId = async (): Promise<number> => {
     if (appIdDeterminationInProgress) {
         while (appIdDeterminationInProgress) {
             await new Promise(resolve => setTimeout(resolve, 50));
@@ -216,8 +240,8 @@ export const forceUpdateAppId = async () => {
 /**
  * @deprecated Please use 'WebSocketUtils.getAppId' from '@deriv-com/utils' instead of this.
  */
-export const getAppId = () => {
-    let app_id = null;
+export const getAppId = (): number => {
+    let app_id: number | null = null;
     const user_app_id = '133540';
     const config_app_id = window.localStorage.getItem('config.app_id');
     const current_domain = getCurrentProductionDomain() || '';
@@ -228,29 +252,34 @@ export const getAppId = () => {
     if (platform && platform_app_ids[platform]) {
         app_id = platform_app_ids[platform];
     } else if (config_app_id) {
-        app_id = config_app_id;
+        app_id = parseInt(config_app_id, 10);
     } else if (user_app_id.length) {
         window.localStorage.setItem('config.default_app_id', user_app_id);
-        app_id = user_app_id;
+        app_id = parseInt(user_app_id, 10);
     } else if (isStaging()) {
         window.localStorage.removeItem('config.default_app_id');
-        app_id = is_bot ? 133540 : domain_app_ids[current_domain] || 133540;
+        const domainAppId = current_domain && domain_app_ids[current_domain] ? domain_app_ids[current_domain] : null;
+        app_id = is_bot ? 133540 : (domainAppId || 133540);
     } else if (/localhost/i.test(window.location.hostname)) {
         app_id = 133540;
     } else {
         window.localStorage.removeItem('config.default_app_id');
-        app_id = is_bot ? 133540 : domain_app_ids[current_domain] || 133540;
+        const domainAppId = current_domain && domain_app_ids[current_domain] ? domain_app_ids[current_domain] : null;
+        app_id = is_bot ? 133540 : (domainAppId || 133540);
     }
 
     // Always force update localStorage with the current app ID
-    window.localStorage.setItem('config.app_id', app_id.toString());
-    sessionStorage.setItem('current_app_id_for_session', app_id.toString());
+    if (app_id) {
+        window.localStorage.setItem('config.app_id', app_id.toString());
+        sessionStorage.setItem('current_app_id_for_session', app_id.toString());
+        return app_id;
+    }
 
-    return app_id;
+    return DEFAULT_APP_ID;
 };
 
 // ✅ UPDATED TO USE CORRECT WEBSOCKET BASE ENDPOINT
-export const getSocketURL = () => {
+export const getSocketURL = (): string => {
     const local_storage_server_url = window.localStorage.getItem('config.server_url');
     if (local_storage_server_url) return local_storage_server_url;
 
@@ -258,7 +287,7 @@ export const getSocketURL = () => {
     return 'ws.derivws.com';
 };
 
-export const checkAndSetEndpointFromUrl = () => {
+export const checkAndSetEndpointFromUrl = (): boolean => {
     if (isTestLink()) {
         const url_params = new URLSearchParams(location.search.slice(1));
 
@@ -287,7 +316,7 @@ export const checkAndSetEndpointFromUrl = () => {
     return false;
 };
 
-export const getDebugServiceWorker = () => {
+export const getDebugServiceWorker = (): boolean => {
     const debug_service_worker_flag = window.localStorage.getItem('debug_service_worker');
     if (debug_service_worker_flag) return !!parseInt(debug_service_worker_flag);
     return false;
@@ -302,27 +331,27 @@ const OAUTH_CSRF_STATE_KEY = 'oauth_csrf_state';
 const OAUTH_CSRF_STATE_TIMESTAMP_KEY = 'oauth_csrf_state_timestamp';
 const OAUTH_EXPIRY_MS = 10 * 60 * 1000;
 
-const base64UrlEncode = (buffer: ArrayBuffer) => {
+const base64UrlEncode = (buffer: ArrayBuffer): string => {
     const bytes = new Uint8Array(buffer);
     let binary = '';
     for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
     return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
 };
 
-const createRandomString = (length = 64) => {
+const createRandomString = (length = 64): string => {
     const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
     const bytes = new Uint8Array(length);
     crypto.getRandomValues(bytes);
     return Array.from(bytes, b => charset[b % charset.length]).join('');
 };
 
-const generateCodeChallenge = async (verifier: string) => {
+const generateCodeChallenge = async (verifier: string): Promise<string> => {
     const data = new TextEncoder().encode(verifier);
     const digest = await crypto.subtle.digest('SHA-256', data);
     return base64UrlEncode(digest);
 };
 
-export const validateOAuthState = (stateFromUrl: string | null) => {
+export const validateOAuthState = (stateFromUrl: string | null): boolean => {
     const stored = sessionStorage.getItem(OAUTH_CSRF_STATE_KEY) || localStorage.getItem(OAUTH_CSRF_STATE_KEY);
     const tsRaw = sessionStorage.getItem(OAUTH_CSRF_STATE_TIMESTAMP_KEY) || localStorage.getItem(OAUTH_CSRF_STATE_TIMESTAMP_KEY);
     const ts = tsRaw ? Number(tsRaw) : 0;
@@ -333,7 +362,7 @@ export const validateOAuthState = (stateFromUrl: string | null) => {
     return true;
 };
 
-export const clearOAuthState = () => {
+export const clearOAuthState = (): void => {
     sessionStorage.removeItem(OAUTH_CSRF_STATE_KEY);
     sessionStorage.removeItem(OAUTH_CSRF_STATE_TIMESTAMP_KEY);
     sessionStorage.removeItem(OAUTH_CODE_VERIFIER_KEY);
@@ -348,7 +377,7 @@ export const clearOAuthState = () => {
     localStorage.removeItem(OAUTH_REDIRECT_URI_KEY);
 };
 
-export const generateLegacyOAuthURL = () => {
+export const generateLegacyOAuthURL = (): string => {
     const { getOauthURL } = URLUtils;
     const oauth_url = getOauthURL();
     const original_url = new URL(oauth_url);
@@ -367,7 +396,7 @@ export const generateLegacyOAuthURL = () => {
     return original_url.toString() || oauth_url;
 };
 
-export const generateOAuthURL = async (prompt?: string) => {
+export const generateOAuthURL = async (prompt?: string): Promise<string> => {
     const { getOauthURL } = URLUtils;
     const oauth_url = getOauthURL();
     const default_oauth_url = new URL(oauth_url);
